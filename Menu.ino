@@ -6,7 +6,6 @@ void menu() {
     if(!horizontalArrowShowed){
         displayArrow(horizontalArrows);
         horizontalArrowShowed = true;
-        Serial.println("aici");
     }
     if (inMainMenu)
         displayMenu();

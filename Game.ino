@@ -84,7 +84,7 @@ void moveEnemy() {
 
 
 
-bool canMove(const char *direction, Position position, bool enemy) {
+bool canMove(const char* direction, Position position, bool enemy) {
     if (direction == "right") {
         // no wall and in the map
         if (position.y == 0 && !enemy) {
@@ -155,10 +155,9 @@ bool canMove(const char *direction, Position position, bool enemy) {
         }
         return !matrix[position.x - 1][position.y] && position.x > 0;
     }
-    //return false;
 }
 
-int getState(unsigned long &lastBlink, int rate, bool &blinkState) {
+int getState(unsigned long& lastBlink, int rate, bool& blinkState) {
     if (millis() - lastBlink > rate) {
         blinkState = !blinkState;
         lastBlink = millis();
@@ -166,39 +165,39 @@ int getState(unsigned long &lastBlink, int rate, bool &blinkState) {
     return blinkState;
 }
 
-void checkForPlant() {
-    int reading = digitalRead(pinSW);
-    if (reading != lastSwState) {
-        lastDebounceTime = millis();
+void checkForPlant(Bomb& bomb) {
+    int reading = digitalRead(2);
+    if (reading != bomb.bombLastSwState) {
+        bomb.bombLastDebounceTime = millis();
     }
 
-    if ((millis() - lastDebounceTime) > debounceDelay) {
-        if (reading != swState) {
-            swState = reading;
-            if (swState == HIGH && !planted && startGameTime - millis() > 2000) {
-                plantBomb();
+    if ((millis() - bomb.bombLastDebounceTime) > 50) {
+        if (reading != bomb.bombSwState) {
+            bomb.bombSwState = reading;
+            if (bomb.bombSwState == HIGH && !bomb.planted) {
+                plantBomb(bomb);
             }
         }
     }
-    lastSwState = reading;
+    bomb.bombLastSwState = reading;
 }
 
-void plantBomb() {
-    plantBombTime = millis();
-    planted = true;
-    bombPosition.x = currentPosition.x;
-    bombPosition.y = currentPosition.y;
-    plantedRoom = room;
+void plantBomb(Bomb& bomb) {
+    bomb.plantBombTime = millis();
+    bomb.planted = true;
+    bomb.x = currentPosition.x;
+    bomb.y = currentPosition.y;
+    bomb.plantedRoom = room;
 }
 
-void explode() {
-    destroyWall(bombPosition.x + 1, bombPosition.y);
-    destroyWall(bombPosition.x - 1, bombPosition.y);
-    destroyWall(bombPosition.x, bombPosition.y + 1);
-    destroyWall(bombPosition.x, bombPosition.y - 1);
+void explode(Bomb& bomb) {
+    destroyWall(bomb.x + 1, bomb.y, bomb);
+    destroyWall(bomb.x - 1, bomb.y, bomb);
+    destroyWall(bomb.x, bomb.y + 1, bomb);
+    destroyWall(bomb.x, bomb.y - 1, bomb);
 
     // check if the player is in the dangerous zone
-    if (abs(currentPosition.x - bombPosition.x) < explodingZone && abs(currentPosition.y - bombPosition.y) < explodingZone) {
+    if (abs(currentPosition.x - bomb.x) < explodingZone && abs(currentPosition.y - bomb.y) < explodingZone) {
         loseGameTime = millis();
         killedByBomb = true;
         lose();
@@ -212,37 +211,38 @@ void explode() {
             displayCenteredText("You finished the game", 0);
         }
     }
-    planted = false;  // after a bomb has exploded, we can plant again
+    bomb.planted = false;  // after a bomb has exploded, we can plant again
 }
 
-void destroyWall(int x, int y) {
+void destroyWall(int x, int y, Bomb& bomb) {
     if (matrix[x][y]) {
-        wallsBlown[plantedRoom - 1]++;
-        if (room == plantedRoom)
+        wallsBlown[bomb.plantedRoom - 1]++;
+        if (room == bomb.plantedRoom)
             matrix[x][y] = 0;
     }
-    if (plantedRoom == 1 && room1[x][y]) {
+    if (bomb.plantedRoom == 1 && room1[x][y]) {
         room1[x][y] = 0;
     }
-    if (plantedRoom == 2 && room2[x][y]) {
+    if (bomb.plantedRoom == 2 && room2[x][y]) {
         room2[x][y] = 0;
     }
-    if (plantedRoom == 3 && room3[x][y]) {
+    if (bomb.plantedRoom == 3 && room3[x][y]) {
         room3[x][y] = 0;
     }
-    if (plantedRoom == 4 && room4[x][y]) {
+    if (bomb.plantedRoom == 4 && room4[x][y]) {
         room4[x][y] = 0;
     }
 }
 
 
-void plantBombLogic() {
-    if ((millis() - plantBombTime < explodingTime) && plantedRoom == room) {
-        lc.setLed(0, bombPosition.x, bombPosition.y, getState(lastBombBlink, bombBlinkRate, blinkStateBomb));
+void plantBombLogic(Bomb& bomb) {
+    if ((millis() - bomb.plantBombTime < explodingTime) && bomb.plantedRoom == room) {
+        lc.setLed(0, bomb.x, bomb.y, getState(bomb.lastBombBlink, bombBlinkRate, bomb.blinkStateBomb));
     } else {
-        explode();  // if the time passed, it explodes
+        explode(bomb);  // if the time passed, it explodes
     }
 }
+
 
 void lose() {
     displayLoseAnimation();
@@ -276,15 +276,6 @@ void displayMatrix() {
 }
 
 void playGame() {
-    for (int i = 0; i < 4; i++) {
-        Serial.print(wallsBlown[i]);
-        Serial.print("-");
-        Serial.print(wallCount[i]);
-        Serial.print("    ");
-        Serial.print(currentLevel);
-        Serial.print("    ");
-    }
-    Serial.println();
     displayMatrix();
     if (!lost && !won && !killedByEnemy) {
         clock();
@@ -292,9 +283,13 @@ void playGame() {
         lc.setLed(0, currentPosition.x, currentPosition.y, getState(lastPlayerBlink, playerBlinkRate, blinkStatePlayer));
         if (room != 1)
             lc.setLed(0, enemyPosition.x, enemyPosition.y, getState(lastEnemyBlink, enemySpeed / 4, enemyBlinkState));
-        checkForPlant();  // get the input of the sw button, and plant the bomb when it is pressed
-        if (planted) {    // if the bomb is planted then blink
-            plantBombLogic();
+        checkForPlant(bombs[0]);  // get the input of the sw button, and plant the bomb when it is pressed
+        if (bombs[0].planted){   // if the bomb is planted then blink
+            checkForPlant(bombs[1]);
+            plantBombLogic(bombs[0]);
+        }
+        if(bombs[1].planted){
+            plantBombLogic(bombs[1]);
         }
         movePlayer();  // read the joystick position and move around
         if (room != 1)
@@ -305,10 +300,8 @@ void playGame() {
             lcd.clear();
         }
     }
-    if (killedByEnemy) {
+    if (killedByEnemy || killedByBomb) {
         lose();
     }
-    if (killedByBomb) {
-        lose();
-    }
+
 }
