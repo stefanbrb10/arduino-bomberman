@@ -27,20 +27,15 @@ bool won = false;
 bool toStartGame = false;  // to know that the player selected the option "start game"
 bool inGame = false;
 
-//bool planted = false;             // indicates the bomb has been planted
-//unsigned long plantBombTime = 0;  // the starting time of planting
-
 unsigned long lastPlayerBlink = 0;  // to know when to blink
 bool blinkStatePlayer = true;
 
-//unsigned long lastBombBlink = 0;
-//bool blinkStateBomb = true;   // indicates the state of the bomb LED
 const int explodingZone = 2;  // all the blocks in a radius of 2 will explode
 const int explodingTime = 2500;
 
 bool playing = false;
 
-const int levelProbability[] = { 7, 32 };  // the probability that a wall is on a cell
+const int levelProbability[] = { 5, 32 };  // the probability that a wall is on a cell
 const int levelCount = 4;
 int currentLevel = 1;
 
@@ -52,6 +47,7 @@ int room = 1;
 unsigned long loseGameTime = 0;
 bool killedByEnemy = false;
 bool killedByBomb = false;
+bool killedByRadiation = false;
 const int bombCount = 2;
 
 struct Bomb {
@@ -80,18 +76,22 @@ struct Bomb {
 
 Bomb bombs[2];
 
-//int plantedRoom;
+struct Enemy{
+    int x, y;
+    unsigned long lastEnemyMove;
+    unsigned long lastEnemyBlink;
+
+};
+
+unsigned long thirdLevelStartTime = 0;
+bool radiatedInOtherRoom = false;
+
 
 void startGame();
 void generateWalls(const int probability);
 void movePlayer();
 bool canMove(const char *direction);
 int getState(unsigned long &lastBlink, int rate, bool &blinkState);
-//void checkForPlant();
-// void plantBomb();
-// void explode();
-// void destroyWall(int x, int y) ;
-// void plantBombLogic();
 void playGame();
 
 #endif

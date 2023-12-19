@@ -6,6 +6,7 @@
 void startGame() {
     killedByEnemy = false;
     killedByBomb = false;
+    killedByRadiation = false;
     currentPosition.x = initialPosition.x;
     currentPosition.y = initialPosition.y;
     enemyPosition.x = matrixSize / 2 - 1;
@@ -171,11 +172,13 @@ void checkForPlant(Bomb& bomb) {
         bomb.bombLastDebounceTime = millis();
     }
 
-    if ((millis() - bomb.bombLastDebounceTime) > 50) {
+    if ((millis() - bomb.bombLastDebounceTime) > debounceDelay) {
         if (reading != bomb.bombSwState) {
             bomb.bombSwState = reading;
             if (bomb.bombSwState == HIGH && !bomb.planted) {
-                plantBomb(bomb);
+                if (bomb.firstRead) {
+                    bomb.firstRead = false;
+                } else plantBomb(bomb);
             }
         }
     }
@@ -200,10 +203,13 @@ void explode(Bomb& bomb) {
     if (abs(currentPosition.x - bomb.x) < explodingZone && abs(currentPosition.y - bomb.y) < explodingZone) {
         loseGameTime = millis();
         killedByBomb = true;
+        tone(buzzerPin, 100, 500);
         lose();
     } else if (wallsBlown[room - 1] >= wallCount[room - 1]) {
         if (room < levelCount) {
             currentLevel++;
+            if (currentLevel == 3)
+                thirdLevelStartTime = millis();
         }
         if (currentLevel < levelCount) {
             //wallsBlown[room - 1] = 0;  // resfresh this to be able to count at the next playing
@@ -247,8 +253,7 @@ void plantBombLogic(Bomb& bomb) {
 void lose() {
     displayLoseAnimation();
     lost = true;
-    //lcd.clear();
-    String loseMessage = "   Next time, ";
+    String loseMessage = "Next time, ";
     loseMessage += playerName;
     loseMessage += " ";
     String infoToDisplay = "   Time: ";
@@ -258,14 +263,18 @@ void lose() {
         infoToDisplay += "Enemy ";
     } else if (killedByBomb) {
         infoToDisplay += "Bomb ";
+    } else if (killedByRadiation) {
+        infoToDisplay += "Radiation ";
     }
+
     for (int i = 0; i < 4; i++) {
         wallCount[i] = 0;
         wallsBlown[i] = 0;
     }
     currentLevel = 1;
     room = 1;
-    scrollText(loseMessage, infoToDisplay, 0);
+    displayCenteredText(loseMessage, 0);
+    scrollText("", infoToDisplay, 0);
 }
 
 void displayMatrix() {
@@ -277,31 +286,44 @@ void displayMatrix() {
 
 void playGame() {
     displayMatrix();
-    if (!lost && !won && !killedByEnemy) {
+    if (!lost && !won && !killedByEnemy && !killedByRadiation) {
         clock();
         displayRoom();
         lc.setLed(0, currentPosition.x, currentPosition.y, getState(lastPlayerBlink, playerBlinkRate, blinkStatePlayer));
         if (room != 1)
             lc.setLed(0, enemyPosition.x, enemyPosition.y, getState(lastEnemyBlink, enemySpeed / 4, enemyBlinkState));
         checkForPlant(bombs[0]);  // get the input of the sw button, and plant the bomb when it is pressed
-        if (bombs[0].planted){   // if the bomb is planted then blink
+        if (bombs[0].planted) {   // if the bomb is planted then blink
             checkForPlant(bombs[1]);
             plantBombLogic(bombs[0]);
         }
-        if(bombs[1].planted){
+        if (bombs[1].planted) {
             plantBombLogic(bombs[1]);
         }
         movePlayer();  // read the joystick position and move around
         if (room != 1)
             moveEnemy();
         if ((enemyPosition.x == currentPosition.x && enemyPosition.y == currentPosition.y) && room != 1) {
+            tone(buzzerPin, 100, 500);
             killedByEnemy = true;
             loseGameTime = millis();
             lcd.clear();
         }
+        if (currentLevel == 3) {
+            unsigned long timeToRadiation = millis() - thirdLevelStartTime;
+            if (timeToRadiation > 30000 && !radiatedInOtherRoom) {
+                if (room == 3) {
+                    tone(buzzerPin, 100, 500);
+                    killedByRadiation = true;
+                    loseGameTime = millis();
+                    lcd.clear();
+                } else {
+                    radiatedInOtherRoom = true;
+                }
+            }
+        }
     }
-    if (killedByEnemy || killedByBomb) {
+    if (killedByEnemy || killedByBomb || killedByRadiation) {
         lose();
     }
-
 }

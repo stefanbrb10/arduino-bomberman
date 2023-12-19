@@ -3,7 +3,7 @@
 
 
 void menu() {
-    if(!horizontalArrowShowed){
+    if (!horizontalArrowShowed) {
         displayArrow(horizontalArrows);
         horizontalArrowShowed = true;
     }
@@ -49,7 +49,7 @@ void handleMenuOption() {
 }
 
 void handleSubMenuOption() {
-    if(!verticalArrowShowed){
+    if (!verticalArrowShowed) {
         displayArrow(verticalArrows);
         verticalArrowShowed = true;
     }
@@ -274,13 +274,15 @@ void readString(String toDisplay, String &word) {
     joystickPosition.y = analogRead(pinY);
     if (!joyMoved) {
         if (joystickPosition.y > maxJoyThreshold && cursorStringPosition > 0) {
+            readingWord[cursorStringPosition] = ' ';
             cursorStringPosition--;
         }
         if (joystickPosition.y < minJoyThreshold && cursorStringPosition < 15) {
             cursorStringPosition++;
-            if (cursorStringPosition > readingWord.length() - 1) {
+            if (readingWord[cursorStringPosition] == ' ')
+                readingWord[cursorStringPosition] = 'a';
+            else
                 readingWord += 'a';
-            }
         }
 
         if (joystickPosition.x > maxJoyThreshold) {
@@ -320,16 +322,29 @@ String millisToMinutes(unsigned long value) {
 
 void clock() {  // count the time from the beginning of the game
     if (millis() - lastTimeShow > showRate) {
-        String textToDisplay = "Time: ";
+        String textToDisplay = "Time:";
         textToDisplay += millisToMinutes(millis() - startGameTime);
+
+        if (currentLevel == 3) {
+            unsigned long timeUntilRadiation = 30000 - (millis() - thirdLevelStartTime);
+            Serial.println(timeUntilRadiation);
+            if (timeUntilRadiation > 0) {
+                textToDisplay += "R:";
+                textToDisplay += millisToMinutes(timeUntilRadiation);
+            }
+        }
+
         displayCenteredText(textToDisplay, 0);
         lastTimeShow = millis();
     }
 }
 
 void displayRoom() {
-    String textToDisplay = "Room: ";
+    String textToDisplay = "Room:";
     textToDisplay += String(room);
+    textToDisplay += " ";
+    textToDisplay += "Level:";
+    textToDisplay += String(currentLevel);
     displayCenteredText(textToDisplay, 1);
 }
 
@@ -339,5 +354,6 @@ void exitGame() {
     lost = false;
     won = false;
     killedByEnemy = false;
+    killedByRadiation = false;
     clearMatrix();
 }

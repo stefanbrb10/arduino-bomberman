@@ -56,6 +56,7 @@ bool soundOn = true;
 unsigned long startToningTime = 0;
 int toneDuration = 300;
 bool toning = false;
+int space = 0;
 
 
 byte doodleCharacter[] = {
