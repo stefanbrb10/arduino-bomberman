@@ -220,6 +220,9 @@ void explode(Bomb& bomb) {
             room = 1;
             clearMatrix();
             displayWinAnimation();
+            lcd.clear();
+            putLeaderBoard(14, playerName);
+            //putLeaderBoard(millis() - startGameTime, playerName);
         }
     }
     bomb.planted = false;  // after a bomb has exploded, we can plant again
@@ -260,7 +263,6 @@ void lose() {
     lost = true;
     String loseMessage = "Next time, ";
     loseMessage += playerName;
-    loseMessage += " ";
     String infoToDisplay = "Time: ";
     infoToDisplay += String(millisToMinutes(loseGameTime - startGameTime));
     infoToDisplay += "Killed by: ";
@@ -300,6 +302,7 @@ void checkForEnemyKill(Enemy enemy){
 
 void checkForRadiation(){
     unsigned long timeToRadiation = millis() - thirdLevelStartTime;
+    Serial.println(timeToRadiation);
     if (timeToRadiation > 30000 && !radiatedInOtherRoom) {
         if (room == 3) {
             tone(buzzerPin, 100, 500);

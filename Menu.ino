@@ -266,7 +266,64 @@ void initEEPROM() {
     matrixBrightness = EEPROM.read(matrixBrightnessAddress);
     matrixBrightness /= 4;
     eepromOffset = 2;
-    int newStr1AddrOffset = readStringFromEEPROM(eepromOffset, &playerName);
+
+    readStringFromEEPROM(eepromOffset, &playerName);
+}
+
+void putLeaderBoard(int myScore, String myName) {
+    int firstLeaderScoreOffset = readStringFromEEPROM(firstLeaderOffset, &leaderBoard[0].name);
+    leaderBoard[0].score = EEPROM.read(firstLeaderScoreOffset);
+
+    int secondLeaderScoreOffset = readStringFromEEPROM(secondLeaderOffset, &leaderBoard[1].name);
+    leaderBoard[1].score = EEPROM.read(secondLeaderScoreOffset);
+
+    int thirdLeaderScoreOffset = readStringFromEEPROM(thirdLeaderOffset, &leaderBoard[2].name);
+    leaderBoard[2].score = EEPROM.read(thirdLeaderScoreOffset);
+
+    String toDisplay = "";
+    toDisplay += myName;
+    toDisplay += ":";
+    String scoreStr = String(myScore);
+    toDisplay += scoreStr;
+
+    if (myScore < leaderBoard[0].score) {
+        leaderBoard[2] = leaderBoard[1];
+        leaderBoard[1] = leaderBoard[0];
+        leaderBoard[0].score = myScore;
+        leaderBoard[0].name = myName;
+        toDisplay += "(first)";
+
+        writeStringToEEPROM(firstLeaderOffset, leaderBoard[0].name);
+        EEPROM.put(firstLeaderScoreOffset, myScore);
+    } else if (myScore < leaderBoard[1].score) {
+        leaderBoard[2] = leaderBoard[1];
+        leaderBoard[1].score = myScore;
+        leaderBoard[1].name = myName;
+
+        //toDisplay += "(second)";
+
+
+        writeStringToEEPROM(secondLeaderOffset, leaderBoard[1].name);
+        EEPROM.put(secondLeaderScoreOffset, myScore);
+    } else if (myScore < leaderBoard[2].score) {
+        leaderBoard[2].score = myScore;
+        leaderBoard[2].name = myName;
+
+        //toDisplay += "(third)";
+
+
+        writeStringToEEPROM(thirdLeaderOffset, leaderBoard[2].name);
+        EEPROM.put(thirdLeaderScoreOffset, myScore);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        Serial.print(leaderBoard[i].name);
+        Serial.print("  ");
+        Serial.print(leaderBoard[i].score);
+        Serial.println();
+    }
+    Serial.println(toDisplay);
+    displayCenteredText(toDisplay, 0);
 }
 
 void readString(String toDisplay, String &word) {
@@ -308,8 +365,8 @@ void readString(String toDisplay, String &word) {
 }
 
 void displayAbout() {
-    //scrollText(aboutInfo, 1);
-    PlaySong();
+    scrollText("", aboutInfo, 0);
+    //PlaySong();
 }
 
 
@@ -328,7 +385,7 @@ void clock() {  // count the time from the beginning of the game
 
         if (currentLevel == 3) {
             unsigned long timeUntilRadiation = 30000 - (millis() - thirdLevelStartTime);
-            Serial.println(timeUntilRadiation);
+            // Serial.println(timeUntilRadiation);
             if (timeUntilRadiation < 2323232) {
                 textToDisplay += "R:";
                 textToDisplay += millisToMinutes(timeUntilRadiation);

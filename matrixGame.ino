@@ -44,7 +44,7 @@ void setup() {
     lc.shutdown(0, false);
     lc.setIntensity(0, matrixBrightness);
     lc.clearDisplay(0);
-    //displayGreetingMessage();
+    displayGreetingMessage();
 }
 
 void loop() {

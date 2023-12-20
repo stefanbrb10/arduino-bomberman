@@ -14,7 +14,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 String menuOptions[] = { "Start game", "Settings", "About" }; // move through those
 int menuCount = 3;
-String aboutInfo = "Creator: Stefan Barbu  Github: stefanbrb10; @2023unibuc  press SW to go back";
+String aboutInfo = "Creator: Stefan Barbu  Github: stefanbrb10; @2023unibuc  press SW to go back ";
 String settingsOptions[] = { "Matrix brightness", "LCD brightness", "Change name", "Sound ON/OFF", "Back" };
 int settingsCount = 5;
 
@@ -49,6 +49,17 @@ String playerName;
 int eepromOffset = 2;
 String readingWord = "a";
 
+const int firstLeaderOffset = 100;
+const int secondLeaderOffset = 120;
+const int thirdLeaderOffset = 140;
+
+struct LeaderBoard{
+    int score;
+    String name;
+};
+
+LeaderBoard leaderBoard[3];
+
 unsigned long buzzerStartTime = 0;
 const int buzzerDuration = 50;
 const int eepromSoundAddress = 255;
@@ -78,7 +89,6 @@ void handleSubMenuOption();
 void displayCenteredText(String text, int line);
 void displayGreetingMessage();
 void displayMenu();
-void scrollText(String text, int line);
 void move(int &option, String optionList[], int len, String title);
 void readSw();
 void handleSubMenuLogic();
