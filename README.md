@@ -92,7 +92,10 @@ randomness, though.
 <details>
   <summary>Picture</summary>
   ![image](https://github.com/stefanbrb10/arduino-bomberman/assets/35970743/a597ccaa-8b8c-4d13-a9b2-4fe316ad75ae)
+</details>
 
+<details>
+  <summary>[Video](https://youtu.be/DVHCwYjfbso?si=O7dBzvCt1A7xGhVd)</summary>
 </details>
   
 </details>
