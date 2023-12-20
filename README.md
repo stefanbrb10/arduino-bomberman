@@ -88,5 +88,11 @@ randomness, though.
   <summary> Final Thoughts </summary>
   It was harder than expected to me, but i feel like doing this project helped me a lot. Even though all the functionalities are not perfect and may have bugs, I learned that modularisation of the code is essential. In a future projects i will learn from my mistakes. For example, at the beginning I added a single bomb. When i wanted to have multiple bombs, it was really hard for me to change the code and it took me hours. If i would've written a class at the beginning it would've been easier. All in all, I think this game makes me look smart and it is a pleasure to be able to work on things that people can use phisically.
 </details>
+
+<details>
+  <summary>Picture</summary>
+  ![image](https://github.com/stefanbrb10/arduino-bomberman/assets/35970743/a597ccaa-8b8c-4d13-a9b2-4fe316ad75ae)
+
+</details>
   
 </details>
