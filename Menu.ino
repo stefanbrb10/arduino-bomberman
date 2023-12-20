@@ -106,6 +106,7 @@ void scrollText(String text, String text2, int line) {
         }
         if (text2 != "") {
             lcd.setCursor(1, line + 1);
+            //lcd.print(text2);
             lcd.print(text2.substring(currentCharSecondLine, currentCharSecondLine + lcdCols));
             currentCharSecondLine++;
             if (currentCharSecondLine >= text2.length()) {
@@ -328,7 +329,7 @@ void clock() {  // count the time from the beginning of the game
         if (currentLevel == 3) {
             unsigned long timeUntilRadiation = 30000 - (millis() - thirdLevelStartTime);
             Serial.println(timeUntilRadiation);
-            if (timeUntilRadiation > 0) {
+            if (timeUntilRadiation < 2323232) {
                 textToDisplay += "R:";
                 textToDisplay += millisToMinutes(timeUntilRadiation);
             }

@@ -14,7 +14,7 @@ Position currentPosition;
 Position joystickPosition;  // raw joystick positiom
 //Position bombPosition;
 
-Position enemyPosition;
+//Position enemyPosition;
 
 
 int wallCount[4] = { 0 };  // how many walls were generated
@@ -77,11 +77,19 @@ struct Bomb {
 Bomb bombs[2];
 
 struct Enemy{
-    int x, y;
+    Position position;
     unsigned long lastEnemyMove;
     unsigned long lastEnemyBlink;
+    bool blinkState;
 
+    Enemy(){
+        lastEnemyBlink = 0;
+        lastEnemyMove = 0;
+        blinkState = true;
+    }
 };
+
+Enemy enemies[2];
 
 unsigned long thirdLevelStartTime = 0;
 bool radiatedInOtherRoom = false;
