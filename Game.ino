@@ -306,11 +306,11 @@ void checkForRadiation(){
     if (timeToRadiation > 30000 && !radiatedInOtherRoom) {
         if (room == 3) {
             tone(buzzerPin, 100, 500);
-            killedByRadiation = true;
+            killedByRadiation = true; // the player dies and the game ends
             loseGameTime = millis();
             lcd.clear();
         } else {
-            radiatedInOtherRoom = true;
+            radiatedInOtherRoom = true; // if the radiation happened in other room then the player won't die
         }
     }
 }

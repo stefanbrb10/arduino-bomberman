@@ -3,17 +3,18 @@
 
 
 void menu() {
+    // help the user see what he has to do with the joystick
     if (!horizontalArrowShowed) {
         displayArrow(horizontalArrows);
-        horizontalArrowShowed = true;
+        horizontalArrowShowed = true; // show it only once
     }
     if (inMainMenu)
-        displayMenu();
+        displayMenu(); // display menu oprions (main)
     if (!inMainMenu && inSubMenu && !toStartGame) {
         handleMenuOption();  // act accordingly to what the player has chosen through joystick
     }
     if (inSubSubMenu) {
-        handleSubMenuOption();
+        handleSubMenuOption(); // move around options
     }
     if (millis() - startToningTime > toneDuration && toning) {
         noTone(buzzerPin);
@@ -21,6 +22,7 @@ void menu() {
     }
 }
 
+// custom char that looks like a doodle
 void displayDoodleCharacters() {
     lcd.createChar(0, doodleCharacter);
     lcd.setCursor(0, 0);
@@ -32,11 +34,12 @@ void displayDoodleCharacters() {
 
 void handleMenuOption() {
     if (currentMenuOption == 0) {
+        // start the game and exit the menu
         toStartGame = true;
         inMainMenu = false;
         inSubMenu = false;
     }
-    if (currentMenuOption == 1) {
+    if (currentMenuOption == 1) { // display the number of options and the current option
         String settingsText = "Settings [";
         settingsText += String(currentSubmenuOption + 1);
         settingsText += "/";
@@ -50,14 +53,14 @@ void handleMenuOption() {
 
 void handleSubMenuOption() {
     if (!verticalArrowShowed) {
-        displayArrow(verticalArrows);
+        displayArrow(verticalArrows); // the user should move the joystick up/down
         verticalArrowShowed = true;
     }
     if (currentMenuOption == 1) {
         if (currentSubmenuOption == 0) {
-            readNumber("Matrix brightness", matrixBrightness, 0, 4);  // get the user values
+            readNumber("Matrix brightness", matrixBrightness, 0, brightnessStep);  // get the user values
         } else if (currentSubmenuOption == 1)
-            readNumber("LCD brightness", lcdBrightness, 0, 4);
+            readNumber("LCD brightness", lcdBrightness, 0, brightnessStep);
         else if (currentSubmenuOption == 2) {
             String toShow = "Before: " + playerName;
             readString(toShow, playerName);
@@ -93,6 +96,8 @@ void displayMenu() {
     move(currentMenuOption, menuOptions, menuCount, mainMenuText);  // scroll through menu options
 }
 
+
+// function to scroll 2 texts at the same time in a function (i know it is not ok but i didn't have time)
 void scrollText(String text, String text2, int line) {
     // show the scrolling text if it is bigger than the lcd
     if (millis() - lastScroll > scrollingSpeed) {
@@ -167,7 +172,7 @@ void readSw() {
                     horizontalArrowShowed = false;
                 }
                 if (inGame && (lost || won)) {
-                    exitGame();  // resfresh game
+                    exitGame();  // refresh game
                 }
             }
         }
@@ -183,6 +188,7 @@ void moveMenu(bool &state1, bool &state2, char *direction) {
     clearMatrix();
 }
 
+// it is called when the user pressed SW while he was in settings
 void handleSubMenuLogic() {
     clearMatrix();
     if ((currentMenuOption == 1 && currentSubmenuOption == settingsCount - 1) || currentMenuOption == 2) {
@@ -202,6 +208,7 @@ void handleSubMenuLogic() {
     }
 }
 
+// the user has pressed SW while he was in the last menu level
 void handleSubSubMenuLogic() {
     if (currentMenuOption == 1) {
         if (currentSubmenuOption == 0 && matrixBrightness >= minBrightness && matrixBrightness <= maxBrightness) {
@@ -239,7 +246,7 @@ void readNumber(String numToDisplay, int &number, int lowerBound, int upperBound
 
 
 // code from roboticsbackend.com/arduino-write-string-in-eeprom/
-
+// each char is in an address
 int writeStringToEEPROM(int addrOffset, const String &strToWrite) {
     byte len = strToWrite.length();
     EEPROM.put(addrOffset, len);
@@ -264,7 +271,7 @@ void initEEPROM() {
     lcdBrightness = EEPROM.read(lcdBrightnessAddress);  // use the EEPROM vlue
     soundOn = EEPROM.read(eepromSoundAddress);
     matrixBrightness = EEPROM.read(matrixBrightnessAddress);
-    matrixBrightness /= 4;
+    matrixBrightness /= brightnessStep;
     eepromOffset = 2;
 
     readStringFromEEPROM(eepromOffset, &playerName);
@@ -332,7 +339,7 @@ void readString(String toDisplay, String &word) {
     joystickPosition.y = analogRead(pinY);
     if (!joyMoved) {
         if (joystickPosition.y > maxJoyThreshold && cursorStringPosition > 0) {
-            readingWord[cursorStringPosition] = ' ';
+            readingWord[cursorStringPosition] = ' '; // erase
             cursorStringPosition--;
         }
         if (joystickPosition.y < minJoyThreshold && cursorStringPosition < 15) {

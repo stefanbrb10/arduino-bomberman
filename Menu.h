@@ -68,6 +68,7 @@ unsigned long startToningTime = 0;
 int toneDuration = 300;
 bool toning = false;
 int space = 0;
+const int brightnessStep = 4;
 
 
 byte doodleCharacter[] = {
