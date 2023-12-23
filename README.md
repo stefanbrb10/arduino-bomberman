@@ -95,7 +95,8 @@ randomness, though.
 </details>
 
 <details>
-  <summary>[Video](https://youtu.be/DVHCwYjfbso?si=O7dBzvCt1A7xGhVd)</summary>
+  <summary>Video</summary>
+  https://youtu.be/DVHCwYjfbso?si=O7dBzvCt1A7xGhVd
 </details>
   
 </details>
